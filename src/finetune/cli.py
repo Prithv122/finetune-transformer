@@ -1,4 +1,4 @@
-"""``finetune`` command line: data-download, data-check, sweep, report, predict."""
+"""``finetune`` command line: data-download, data-check, sweep, report, latency, predict."""
 
 from __future__ import annotations
 
@@ -56,6 +56,16 @@ def _report(args: argparse.Namespace) -> int:
     return 0
 
 
+def _latency(args: argparse.Namespace) -> int:
+    from . import latency
+
+    arms = args.arms.split(",")
+    model = Path(args.model) if args.model else None
+    path = latency.measure(Path(args.data_dir), Path(args.results), arms=arms, model_dir=model)
+    print(f"wrote {path}")
+    return 0
+
+
 def _predict(args: argparse.Namespace) -> int:
     from .train import Classifier
 
@@ -92,6 +102,15 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--results", default="results")
     p.add_argument("--data-dir", default=default_dir, help="for intent names, if present")
     p.set_defaults(func=_report)
+
+    p = sub.add_parser("latency", help="CPU ms per query, batch 1, on validation texts")
+    p.add_argument("--data-dir", default=default_dir)
+    p.add_argument("--results", default="results")
+    p.add_argument("--arms", default="tfidf,embed,finetune")
+    p.add_argument(
+        "--model", help="fine-tuned checkpoint dir (the finetune arm is skipped without it)"
+    )
+    p.set_defaults(func=_latency)
 
     p = sub.add_parser("predict", help="classify texts with a local or Hub checkpoint")
     p.add_argument("--model", required=True, help="checkpoint dir or Hub repo id")
