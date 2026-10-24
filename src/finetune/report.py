@@ -23,6 +23,8 @@ import numpy as np
 ARMS = ("tfidf", "embed", "finetune")
 BASELINES = ("tfidf", "embed")
 K_GRID = ("5", "10", "25", "50", "all")
+#: The pre-registered seeds; a cell counts for the rules only when it has exactly these.
+SEEDS = (1, 2, 3)
 HEADER = (
     "arm,k_per_class,seed,macro_f1,accuracy,ece,n_train,train_seconds,git_sha,"
     "val_macro_f1,selection"
@@ -257,6 +259,23 @@ def _values(rows: Sequence[RunRow], arm: str, k: str, field: str = "macro_f1") -
     return [getattr(r, field) for r in rows if r.arm == arm and r.k == k]
 
 
+def _absence(rows: Sequence[RunRow], arm: str, k: str) -> str | None:
+    """``None`` when the (arm, k) cell holds exactly the pre-registered seeds, else what is missing.
+
+    The rules only judge complete, paired cells: a cell with seeds {1, 2} looks like a result but
+    is not the one the plan describes.
+    """
+    seeds = {r.seed for r in rows if r.arm == arm and r.k == k}
+    if seeds == set(SEEDS):
+        return None
+    if not seeds:
+        return f"{arm}@{k}"
+    lacking = ",".join(str(s) for s in sorted(set(SEEDS) - seeds)) or "none"
+    extra = sorted(seeds - set(SEEDS))
+    note = f"seeds {lacking} missing" + (f", unexpected {extra}" if extra else "")
+    return f"{arm}@{k} ({note})"
+
+
 def _stat(values: Sequence[float]) -> Stat:
     return Stat(mean=float(np.mean(values)), min=float(min(values)), max=float(max(values)))
 
@@ -303,9 +322,9 @@ def better_baseline(rows: Sequence[RunRow], k: str) -> str | None:
     """The baseline with the higher mean macro-F1 at ``k`` (``None`` unless both are present)."""
     means = {}
     for arm in BASELINES:
-        values = _values(rows, arm, k)
-        if not values:
+        if _absence(rows, arm, k):
             return None
+        values = _values(rows, arm, k)
         means[arm] = float(np.mean(values))
     return max(BASELINES, key=lambda arm: means[arm])
 
@@ -322,7 +341,7 @@ def crossover(rows: Sequence[RunRow]) -> CrossoverResult:
     found: str | None = None
     missing_before_found = False
     for k in K_GRID:
-        absent = [f"{arm}@{k}" for arm in ARMS if not _values(rows, arm, k)]
+        absent = [a for a in (_absence(rows, arm, k) for arm in ARMS) if a]
         if absent:
             missing.extend(absent)
             continue
@@ -363,7 +382,7 @@ def crossover(rows: Sequence[RunRow]) -> CrossoverResult:
 
 def headline(rows: Sequence[RunRow]) -> HeadlineResult:
     """Rule 2: at k = all, finetune must beat tfidf by at least 5 macro-F1 points (seed means)."""
-    missing = tuple(f"{arm}@all" for arm in ("finetune", "tfidf") if not _values(rows, arm, "all"))
+    missing = tuple(a for a in (_absence(rows, arm, "all") for arm in ("finetune", "tfidf")) if a)
     if missing:
         return HeadlineResult("incomplete", None, None, None, missing, _missing_text(missing))
     ft = float(np.mean(_values(rows, "finetune", "all")))
@@ -385,7 +404,7 @@ def null_result(rows: Sequence[RunRow]) -> NullResult:
     evaluated: list[NullRow] = []
     missing: list[str] = []
     for k in K_GRID:
-        absent = [f"{arm}@{k}" for arm in ("finetune", "embed") if not _values(rows, arm, k)]
+        absent = [a for a in (_absence(rows, arm, k) for arm in ("finetune", "embed")) if a]
         if absent:
             missing.extend(absent)
             continue
@@ -592,7 +611,7 @@ def _full_data_section(
     baseline = better_baseline(rows, "all")
     seeds = sorted({r.seed for r in rows if r.arm == "finetune" and r.k == "all"})
     if baseline is None or not seeds:
-        gone = [f"{a}@all" for a in ("finetune", *BASELINES) if not _values(rows, a, "all")]
+        gone = [x for x in (_absence(rows, a, "all") for a in ("finetune", *BASELINES)) if x]
         return [
             "## Full-data intervals and worst intents (k = all)",
             "",

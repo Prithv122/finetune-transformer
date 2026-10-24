@@ -423,3 +423,32 @@ def test_write_report_notes_missing_predictions(tmp_path):
     text = write_report(results, n_classes=5).read_text(encoding="utf-8")
     assert "predictions file missing" in text
     assert "predictions files not found" in text
+
+
+# ------------------------------------------------------------------ seed completeness
+
+
+def test_one_seed_per_cell_is_incomplete_not_a_result(tmp_path):
+    ft = {k: [0.90] for k in ("5", "10", "25", "50", "all")}
+    tfidf = {k: [0.50] for k in ft}
+    embed = {k: [0.60] for k in ft}
+    rows = load(tmp_path, full_table(ft, tfidf, embed))
+    result = crossover(rows)
+    assert result.status == "incomplete"
+    assert "finetune@5 (seeds 2,3 missing)" in result.text
+    assert headline(rows).status == "incomplete"
+    assert null_result(rows).status == "incomplete"
+
+
+def test_arms_on_different_seeds_are_not_paired(tmp_path):
+    """Baselines on seed 1, finetune on seed 2 at every k: same counts, still not a result."""
+    path = tmp_path / "runs.csv"
+    with open(path, "w", encoding="utf-8", newline="") as handle:
+        writer = csv.writer(handle)
+        writer.writerow(HEADER.split(","))
+        for k in ("5", "10", "25", "50", "all"):
+            for arm, seed, f1 in (("tfidf", 1, 0.5), ("embed", 1, 0.6), ("finetune", 2, 0.9)):
+                writer.writerow([arm, k, seed, f1, f1, 0.05, 385, 1.0, "abc", f1, "C=1"])
+    rows = load_runs(path)
+    assert crossover(rows).status == "incomplete"
+    assert headline(rows).status == "incomplete"
