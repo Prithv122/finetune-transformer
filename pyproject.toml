@@ -1,0 +1,62 @@
+[project]
+name = "finetune-transformer"
+version = "0.1.0"
+description = "At how many labelled examples per class does a fine-tuned DistilBERT beat TF-IDF and frozen-embedding baselines? A paired learning curve on BANKING77."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "numpy>=2.0",
+    "scikit-learn>=1.5",
+    "matplotlib>=3.9",
+]
+
+[project.optional-dependencies]
+# Frozen sentence embeddings (arm B). Pulls torch from the CPU index locally and in CI.
+embed = ["sentence-transformers>=3.0"]
+# Fine-tuning (arm C) and prediction. Kaggle already ships a CUDA torch; the notebook keeps it.
+train = ["torch>=2.4", "transformers>=4.45"]
+# Hosted demo.
+demo = ["streamlit>=1.38", "torch>=2.4", "transformers>=4.45"]
+
+# Console entry points need a real build backend: a uv virtual project
+# ([tool.uv] package = false) installs nothing, so the documented command fails
+# with "No module named ..." even while tests pass (pytest's pythonpath hides it).
+[project.scripts]
+finetune = "finetune.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/finetune"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-cov>=6.0",
+    "ruff>=0.9",
+]
+
+# CPU-only torch wheels: the CUDA build is ~2 GB and nothing local or in CI uses a GPU.
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-q"
+markers = ["slow: needs torch and a tiny model download (the train extra)"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+extend-exclude = ["notebooks"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
