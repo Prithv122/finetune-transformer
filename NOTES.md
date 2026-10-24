@@ -65,3 +65,18 @@ five real problems, all fixed:
    optional `RESUME_FROM` input.
 5. Latency was promised but not implemented (`finetune latency` now, on validation texts); weight
    decay split now stated; `run_record.json` carries the same `-dirty` SHA as `runs.csv`.
+
+### 2026-10-25 — the Kaggle sweep (the one look at test)
+
+- Private kernel `prithvraj02/finetune-transformer-banking77-sweep` v1, pushed with the Kaggle CLI
+  (`uvx --from kaggle kaggle` 2.2.5), GPU T4, internet on, `REF` = `dd2e52a`. Ran 03:54 to 04:40 IST
+  (46 min; estimate was 1.5-2.5 h). Kaggle: Python 3.13.15, torch 2.11.0+cu128, transformers 5.16.1,
+  sentence-transformers 5.7.0 (the code ran from `src/`, so the 3.12 pin did not matter).
+- **Output validated before any number was read:** 45 rows, one SHA (`dd2e52a`, not dirty), exactly
+  seeds {1, 2, 3} in all 15 cells, no duplicates, `n_train` equal to the local sampler for every run,
+  45 prediction files of 3,080 rows whose labels equal the local test labels and whose macro-F1
+  recomputes to `runs.csv`. One checkpoint kept (`finetune_kall_s1`: best epoch 5 of 8).
+- **C hit the grid's top again: C = 100 in 22 of 30 baseline runs** (all 15 TF-IDF runs but two; all
+  embedding cells up to k = 25; embeddings at k = all chose C = 10). The grid cannot change now that
+  test is scored. Reported as a limitation: TF-IDF may be under-tuned, which favours fine-tuning. A
+  sensitivity check with C = 1000 on validation only is exploratory and labelled as such.
