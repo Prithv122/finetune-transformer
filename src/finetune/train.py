@@ -18,7 +18,6 @@ import json
 import math
 import platform
 import random
-import subprocess
 import time
 from collections.abc import Callable, Sequence
 from dataclasses import asdict, dataclass, field
@@ -179,18 +178,11 @@ def _data_digest(split: Split) -> str:
 
 
 def _git_sha() -> str | None:
-    try:
-        result = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
-            capture_output=True,
-            text=True,
-            timeout=10,
-            cwd=Path(__file__).resolve().parent,
-        )
-    except (OSError, subprocess.SubprocessError):
-        return None
-    sha = result.stdout.strip()
-    return sha if result.returncode == 0 and sha else None
+    """HEAD with ``-dirty`` when tracked files differ, as the sweep records it; None off git."""
+    from .sweep import git_sha
+
+    sha = git_sha(Path(__file__).resolve().parent)
+    return None if sha == "unknown" else sha
 
 
 def _library_versions() -> dict[str, str | None]:

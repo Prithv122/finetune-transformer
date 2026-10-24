@@ -113,6 +113,25 @@ def completed_runs(out_dir: Path) -> set[tuple[str, str, int]]:
     return done
 
 
+def _drop_stale_rows(out_dir: Path, done: set[tuple[str, str, int]]) -> int:
+    """Remove rows whose predictions file is missing, so their re-run does not duplicate them."""
+    runs_csv = out_dir / "runs.csv"
+    if not runs_csv.is_file():
+        return 0
+    with open(runs_csv, encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    kept = [r for r in rows if (r["arm"], r["k_per_class"], int(r["seed"])) in done]
+    if len(kept) == len(rows):
+        return 0
+    temporary = runs_csv.with_name(runs_csv.name + ".part")
+    with open(temporary, "w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=RUNS_HEADER, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(kept)
+    temporary.replace(runs_csv)
+    return len(rows) - len(kept)
+
+
 def _append_row(path: Path, row: dict) -> None:
     new = not path.is_file()
     with open(path, "a", encoding="utf-8", newline="") as handle:
@@ -155,6 +174,9 @@ def run_sweep(
     n_classes = len(test.label_names)
     sha = sha or git_sha()
     done = completed_runs(out_dir)
+    dropped = _drop_stale_rows(out_dir, done)
+    if dropped:
+        log(f"dropped {dropped} row(s) without a predictions file; they run again")
     ks, seeds = tuple(ks), tuple(seeds)
     written = []
     for arm_name, arm in arms.items():

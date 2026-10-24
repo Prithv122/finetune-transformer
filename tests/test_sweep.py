@@ -99,6 +99,10 @@ def test_resume_skips_completed_runs(tmp_path):
     third: list = []
     rows = sweep.run_sweep(train, test, tmp_path, {"a": _fake_arm(third)}, ks=(2,), seeds=(1, 2))
     assert rows == [] and third == []
+    # The re-run replaced the stale row instead of adding a duplicate the report would reject.
+    with open(tmp_path / "runs.csv", encoding="utf-8") as handle:
+        keys = [(r["arm"], r["k_per_class"], r["seed"]) for r in csv.DictReader(handle)]
+    assert sorted(keys) == [("a", "2", "1"), ("a", "2", "2")]
 
 
 def test_wrong_proba_shape_raises(tmp_path):
