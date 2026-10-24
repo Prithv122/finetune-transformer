@@ -20,7 +20,7 @@ from finetune.data import Split
 from finetune.metrics import macro_f1
 
 #: Regularisation strengths tried for both baselines (inverse strength, as in scikit-learn).
-C_GRID = (0.1, 1.0, 10.0)
+C_GRID = (0.1, 1.0, 10.0, 100.0)
 EMBED_MODEL = "BAAI/bge-small-en-v1.5"
 
 

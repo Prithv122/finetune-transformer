@@ -57,3 +57,15 @@ fine-tuning). The test split is scored once per (arm, k, seed): 45 runs.
 All 45 runs come from one sweep (`finetune sweep`) at one git SHA, on a Kaggle GPU, writing
 `results/runs.csv` and one predictions file per run. The README, NOTES and report quote only numbers
 regenerated from those files by `finetune report`.
+
+## Amendments
+
+- **2026-10-25, before any test score:** the fine-tune recipe also clips the gradient norm at 1.0
+  (`TrainConfig.max_grad_norm`). The original row did not name clipping; the training loop has it
+  because mixed precision unscales gradients before the step anyway, and 1.0 is the usual default.
+  Decided while writing the loop, not from any result.
+- **2026-10-25, before any test score:** the logistic-regression grid becomes C in {0.1, 1, 10, 100}.
+  A smoke run of both baselines at real sizes (k = 5, 50, all; seed 1), scored on 15 rows per intent cut
+  from train and never on the test split, picked C = 10, the top of the old grid, in all six runs.
+  A choice that sits on the grid's edge means the grid is too narrow, which under-tunes the baselines and
+  would bias the comparison toward fine-tuning. Selection is still by val macro-F1 only.
