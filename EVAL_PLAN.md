@@ -69,3 +69,8 @@ regenerated from those files by `finetune report`.
   from train and never on the test split, picked C = 10, the top of the old grid, in all six runs.
   A choice that sits on the grid's edge means the grid is too narrow, which under-tunes the baselines and
   would bias the comparison toward fine-tuning. Selection is still by val macro-F1 only.
+- **2026-10-25, before any test score (correction):** at k = 50 **three** intents are short, not
+  four: `contactless_not_working` (25 pool rows), `virtual_card_not_working` (31) and `card_acceptance`
+  (49). The 3,805-row figure was right. Also stated explicitly now: weight decay applies to weight
+  matrices only; biases and LayerNorm parameters get none (the standard AdamW split, already in the
+  loop).
