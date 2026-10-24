@@ -7,6 +7,8 @@ on:
   workflow_dispatch:
 
 jobs:
+  # Fast job. Must stay torch-free: it proves the core package, the baselines and the report work
+  # without the train/embed extras, and that nothing outside the extras imports torch at import time.
   test:
     runs-on: ubuntu-latest
     steps:
@@ -20,8 +22,15 @@ jobs:
       - name: Set up Python
         run: uv python install
 
-      - name: Install dependencies
+      - name: Install dependencies (no extras)
         run: uv sync --all-groups
+
+      - name: Assert torch is absent
+        run: |
+          if uv run python -c "import torch" 2>/dev/null; then
+            echo "::error::torch is installed in the fast job; it must stay torch-free"
+            exit 1
+          fi
 
       - name: Lint
         run: |
@@ -29,4 +38,25 @@ jobs:
           uv run ruff format --check .
 
       - name: Test
-        run: uv run pytest --cov=src --cov-report=term-missing
+        run: uv run pytest -m "not slow" --cov=src --cov-report=term-missing
+
+  # Slow job: installs the train and embed extras (CPU torch) and runs the tests marked slow,
+  # which fine-tune a tiny random DistilBERT and embed with a small model.
+  slow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Install dependencies (train and embed extras)
+        run: uv sync --all-groups --extra train --extra embed
+
+      - name: Test (slow)
+        run: uv run pytest -m slow
