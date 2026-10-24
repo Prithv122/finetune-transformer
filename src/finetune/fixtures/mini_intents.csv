@@ -1,0 +1,61 @@
+text,category
+I am still waiting on my card?,card_arrival
+What can I do if my card still hasn't arrived after 2 weeks?,card_arrival
+I have been waiting over a week. Is the card still coming?,card_arrival
+Can I track my card while it is in the process of delivery?,card_arrival
+"How do I know if I will get my card, or if it is lost?",card_arrival
+When did you send me my new card?,card_arrival
+Do you have info about the card on delivery?,card_arrival
+What do I do if I still have not received my new card?,card_arrival
+Does the package with my card have tracking?,card_arrival
+I ordered my card but it still isn't here,card_arrival
+Is it possible for me to change my PIN number?,change_pin
+What are the steps to change my PIN to something else?,change_pin
+In what way can I change my PIN and where do I need to be?,change_pin
+Can I change my PIN at any cash machines?,change_pin
+I need to make my card PIN a different number,change_pin
+Can I change my PIN abroad?,change_pin
+Do I have to go to the bank to change my PIN?,change_pin
+If I want to can I set up a new PIN?,change_pin
+Do I have to go into the bank to change my PIN?,change_pin
+Can I change my PIN at my local bank?,change_pin
+What is my money worth in other countries?,exchange_rate
+Will my money be of equal value when I travel abroad?,exchange_rate
+Do you know the rate of exchange?,exchange_rate
+What foreign exchange rate will I get on weekdays and on the weekends?,exchange_rate
+What is the exchange looking like?,exchange_rate
+How is the exchange rate doing?,exchange_rate
+I would like to know how exchange rates are calculated when transferring funds.,exchange_rate
+I would like to know what exchange rates you use?,exchange_rate
+"If I need to cash foreign transfers, how does that work?",exchange_rate
+Do you know what your exchange rates are?,exchange_rate
+Has there been any activity on my card today?,lost_or_stolen_card
+I lost my wallet and all my cards were in it.,lost_or_stolen_card
+I'm panicking!  I lost my card!  Help!,lost_or_stolen_card
+I need to report a stolen card,lost_or_stolen_card
+How do I replace a stolen card?,lost_or_stolen_card
+Can you provide information for freezing my card immediately?,lost_or_stolen_card
+What's the phone number to freeze a card?,lost_or_stolen_card
+I can't find my card! Can you help?,lost_or_stolen_card
+"Hi, I am on vacation in Spain and someone stole my bag with my phone and wallet with cards and everything. Can you block it ASAP and then I want to order a new one also ASAP.",lost_or_stolen_card
+Help! I lost my card!,lost_or_stolen_card
+I think my top-up has failed.,top_up_failed
+Top-up is not working,top_up_failed
+My top up is not working,top_up_failed
+"My top-up hasn't gone through, what happened?",top_up_failed
+My top-up was rejected by an app.,top_up_failed
+For what reason did my top-up fail?,top_up_failed
+I can't add any more money.,top_up_failed
+Why won't my top up work,top_up_failed
+I topped up but the app denied it,top_up_failed
+My money I added isn't on my card.,top_up_failed
+How long am I to wait before the transfer gets to my account?,transfer_timing
+Will the transfer show up in my account soon?,transfer_timing
+What time will a transfer from the US take?,transfer_timing
+When will the money reach my  account?,transfer_timing
+How long does it take to get my money,transfer_timing
+When does my transfer from the US arrive in my account?,transfer_timing
+"I desperately need to transfer something from China, Please give me the wait time.",transfer_timing
+I am yet to receive the money in my account how long will this take?,transfer_timing
+Does a US transfer take long,transfer_timing
+How long will this transfer from europe take?,transfer_timing
