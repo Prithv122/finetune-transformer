@@ -18,9 +18,9 @@ CI; the real sweep runs on a Kaggle GPU through `notebooks/train_kaggle.ipynb`.
 
 ## Acceptance criteria
 
-- [ ] `EVAL_PLAN.md` committed before the first test score
-- [ ] 45 runs (3 arms x 5 k x 3 seeds) from one sweep at one SHA in `results/runs.csv`
-- [ ] Crossover, headline and null rules answered from `finetune report` output only
+- [x] `EVAL_PLAN.md` committed before the first test score
+- [x] 45 runs (3 arms x 5 k x 3 seeds) from one sweep at one SHA in `results/runs.csv`
+- [x] Crossover, headline and null rules answered from `finetune report` output only
 - [ ] Fine-tuned weights on the Hugging Face Hub with a model card; demo loads them
 - [ ] Runs from a clean clone using only the documented steps
 - [ ] Tests, lint and CI green; README results come from real runs

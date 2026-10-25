@@ -80,3 +80,17 @@ five real problems, all fixed:
   embedding cells up to k = 25; embeddings at k = all chose C = 10). The grid cannot change now that
   test is scored. Reported as a limitation: TF-IDF may be under-tuned, which favours fine-tuning. A
   sensitivity check with C = 1000 on validation only is exploratory and labelled as such.
+
+### 2026-10-25 — reading the results, write-up
+
+- **Answer: a null result.** Frozen bge-small + LR beat fine-tuned DistilBERT at every k (gap -14.8 points at k = 5,
+  -1.4 at all); crossover not reached; headline "did not pay off" (+2.7 over TF-IDF, bar 5). Full-data paired bootstrap
+  excludes zero for all three seeds. `finetune report` regenerates `summary.md` byte for byte locally.
+- **Grid edge, quantified (exploratory, val only, `scripts/explore_c_grid.py`):** C = 1000 beat the better of 10 and 100
+  in 9 of 30 cells, by at most 0.32 points; worse elsewhere (TF-IDF median -0.96). The edge cost the baselines well under a
+  point, and a better-tuned baseline only strengthens the null.
+- **Latency deviation:** `finetune latency` ran with the CPU at 100% from other projects' jobs (embedding arm 1.1 s p50,
+  13.9 s p95, obviously inflated). Not committed and not quoted; README says latency is not reported yet. Re-run on an idle
+  machine before quoting anything.
+- Fact-check caught one wrong claim before commit: the embedding arm's 48 s includes GPU encoding on Kaggle, so "under a
+  minute on CPU" was wrong; rewritten as "no GPU training step".
