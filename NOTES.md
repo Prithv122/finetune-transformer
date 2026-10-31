@@ -94,3 +94,28 @@ five real problems, all fixed:
   machine before quoting anything.
 - Fact-check caught one wrong claim before commit: the embedding arm's 48 s includes GPU encoding on Kaggle, so "under a
   minute on CPU" was wrong; rewritten as "no GPU training step".
+
+### 2026-11-01 — local CI replay of `941af97`, then pushed on the owner's yes
+
+Hosted Actions was expected to be unavailable until about 2026-11-02 (account limit), so the local replay is the CI
+record for this push. Fresh clones of `941af9733c020628918a184299f854286ad00293` (86 tracked files), checked out
+detached, fresh installs (`UV_NO_CACHE=1`), `SECRETS_NO_KEYRING=1`, `OMP_NUM_THREADS=4`, run 00:54-01:04 IST.
+
+| Workflow step | Command | Result |
+|---|---|---|
+| `test`: install | `uv sync --all-groups` | ok |
+| `test`: assert torch absent | `uv run python -c "import torch"` must fail | torch absent |
+| `test`: lint | `uv run ruff check .` ; `uv run ruff format --check .` | clean; 29 files formatted |
+| `test`: tests | `uv run pytest -m "not slow" --cov=src --cov-report=term-missing` | **93 passed, 2 skipped**, coverage 73% |
+| `slow`: install | `uv sync --all-groups --extra train --extra embed` | ok |
+| `slow`: tests | `uv run pytest -m slow` | **10 passed** |
+
+Differences from the hosted runner: Windows 11 instead of ubuntu-latest; `--basetemp` in a scratch folder and
+`-p no:cacheprovider` (the sandbox blocks `%TEMP%`); torch threads capped at 4 because other jobs shared the CPU.
+The 2 skips are expected without the data download (the real-data test) and without torch (the training module).
+
+Hygiene at the same SHA: no weights, caches, `.env` or raw data tracked (largest file `uv.lock`, 160 KB; prediction
+files carry ids and confidences only, no query text); no secret patterns in `git log --all -p`; one author and
+committer; no assistant-named file in history.
+
+Pushed on the owner's yes: `dd2e52a..941af97` to `origin/main`. Hosted run 41234893110 started on `941af97`.
